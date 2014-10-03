@@ -72,6 +72,8 @@ public abstract class Model {
 	}
 
 	public final Long save() {
+        beforeSave();
+
 		final SQLiteDatabase db = Cache.openDatabase();
 		final ContentValues values = new ContentValues();
 
@@ -158,10 +160,25 @@ public abstract class Model {
 			db.update(mTableInfo.getTableName(), values, idName+"=" + mId, null);
 		}
 
+        afterSave();
+
+        // always cache after save
+        Cache.addEntity(this);
+
 		Cache.getContext().getContentResolver()
 				.notifyChange(ContentProvider.createUri(mTableInfo.getType(), mId), null);
 		return mId;
 	}
+
+    /**
+     * A very simple before save application level trigger.
+     */
+    protected void beforeSave() { }
+
+    /**
+     * A very simple after save application level trigger.
+     */
+    protected  void afterSave() { }
 
 	// Convenience methods
 
