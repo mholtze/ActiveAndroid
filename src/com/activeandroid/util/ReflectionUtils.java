@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
+import com.activeandroid.FullTextModel;
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.serializer.TypeSerializer;
@@ -44,6 +45,10 @@ public final class ReflectionUtils {
 	public static boolean isTypeSerializer(Class<?> type) {
 		return isSubclassOf(type, TypeSerializer.class);
 	}
+
+    public static boolean isTypeFullText(Class<?> type) {
+        return isSubclassOf(type, FullTextModel.class);
+    }
 
 	// Meta-data
 

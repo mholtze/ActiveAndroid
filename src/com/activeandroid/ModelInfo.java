@@ -52,6 +52,7 @@ final class ModelInfo {
 			put(java.io.File.class, new FileSerializer());
 		}
 	};
+    private Map<Class<? extends FullTextModel>, FullTextTableInfo> mFullTextInfos = new HashMap<Class<? extends FullTextModel>, FullTextTableInfo>();
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// CONSTRUCTORS
@@ -86,6 +87,14 @@ final class ModelInfo {
 		return mTypeSerializers.get(type);
 	}
 
+    public Collection<FullTextTableInfo> getFullTextInfos() {
+        return mFullTextInfos.values();
+    }
+
+    public FullTextTableInfo getFullTextInfo(Class<? extends FullTextModel> type) {
+        return mFullTextInfos.get(type);
+    }
+
 	//////////////////////////////////////////////////////////////////////////////////////
 	// PRIVATE METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +126,13 @@ final class ModelInfo {
 				}
 			}
 		}
+
+        final List<Class<? extends FullTextModel>> fullTextModels = configuration.getFullTextClasses();
+        if (fullTextModels != null) {
+            for (Class<? extends FullTextModel> model : fullTextModels) {
+                mFullTextInfos.put(model, new FullTextTableInfo(model));
+            }
+        }
 
 		return true;
 	}
@@ -194,6 +210,11 @@ final class ModelInfo {
 					TypeSerializer instance = (TypeSerializer) discoveredClass.newInstance();
 					mTypeSerializers.put(instance.getDeserializedType(), instance);
 				}
+                else if (ReflectionUtils.isTypeFullText(discoveredClass)) {
+                    @SuppressWarnings("unchecked")
+                    Class<? extends FullTextModel> modelClass = (Class<? extends FullTextModel>) discoveredClass;
+                    mFullTextInfos.put(modelClass, new FullTextTableInfo(modelClass));
+                }
 			}
 			catch (ClassNotFoundException e) {
 				Log.e("Couldn't create class.", e);

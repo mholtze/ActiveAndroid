@@ -155,4 +155,16 @@ public final class Cache {
 	public static synchronized String getTableName(Class<? extends Model> type) {
 		return sModelInfo.getTableInfo(type).getTableName();
 	}
+
+    public static synchronized Collection<FullTextTableInfo> getFullTextInfos() {
+        return sModelInfo.getFullTextInfos();
+    }
+
+    public static synchronized FullTextTableInfo getFullTextInfo(Class<? extends FullTextModel> type) {
+        return sModelInfo.getFullTextInfo(type);
+    }
+
+    public static synchronized String getFullTextTableName(Class<? extends FullTextModel> type) {
+        return sModelInfo.getFullTextInfo(type).getTableName();
+    }
 }

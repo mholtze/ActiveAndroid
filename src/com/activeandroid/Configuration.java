@@ -41,6 +41,7 @@ public class Configuration {
 	private String mSqlParser;
 	private List<Class<? extends Model>> mModelClasses;
 	private List<Class<? extends TypeSerializer>> mTypeSerializers;
+    private List<Class<? extends FullTextModel>> mFullTextClasses;
 	private int mCacheSize;
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -79,6 +80,10 @@ public class Configuration {
 		return mTypeSerializers;
 	}
 
+    public List<Class<? extends FullTextModel>> getFullTextClasses() {
+        return mFullTextClasses;
+    }
+
 	public int getCacheSize() {
 		return mCacheSize;
 	}
@@ -99,6 +104,7 @@ public class Configuration {
 		private static final String AA_DB_NAME = "AA_DB_NAME";
 		private static final String AA_DB_VERSION = "AA_DB_VERSION";
 		private final static String AA_MODELS = "AA_MODELS";
+        private final static String AA_FTS_MODELS = "AA_FTS_MODELS";
 		private final static String AA_SERIALIZERS = "AA_SERIALIZERS";
 		private final static String AA_SQL_PARSER = "AA_SQL_PARSER";
 
@@ -118,6 +124,7 @@ public class Configuration {
 		private String mSqlParser;
 		private List<Class<? extends Model>> mModelClasses;
 		private List<Class<? extends TypeSerializer>> mTypeSerializers;
+        private List<Class<? extends FullTextModel>> mFullTextClasses;
 
 		//////////////////////////////////////////////////////////////////////////////////////
 		// CONSTRUCTORS
@@ -198,6 +205,29 @@ public class Configuration {
 			return this;
 		}
 
+        public Builder addFullTextClass(Class<? extends FullTextModel> modelClass) {
+            if (mFullTextClasses == null) {
+                mFullTextClasses = new ArrayList<Class<? extends FullTextModel>>();
+            }
+
+            mFullTextClasses.add(modelClass);
+            return this;
+        }
+
+        public Builder addFullTextClasses(Class<? extends FullTextModel>... modelClasses) {
+            if (mFullTextClasses == null) {
+                mFullTextClasses = new ArrayList<Class<? extends FullTextModel>>();
+            }
+
+            mFullTextClasses.addAll(Arrays.asList(modelClasses));
+            return this;
+        }
+
+        public Builder setFullTextClasses(Class<? extends FullTextModel>... modelClasses) {
+            mFullTextClasses = Arrays.asList(modelClasses);
+            return this;
+        }
+
 		public Configuration create() {
 			Configuration configuration = new Configuration(mContext);
 			configuration.mCacheSize = mCacheSize;
@@ -242,6 +272,16 @@ public class Configuration {
 					configuration.mTypeSerializers = loadSerializerList(serializerList.split(","));
 				}
 			}
+
+            // Get full text model classes from meta-data
+            if (mFullTextClasses != null) {
+                configuration.mFullTextClasses = mFullTextClasses;
+            } else {
+                final String modelList = ReflectionUtils.getMetaData(mContext, AA_FTS_MODELS);
+                if (modelList != null) {
+                    configuration.mFullTextClasses = loadFullTextList(modelList.split(","));
+                }
+            }
 
 			return configuration;
 		}
@@ -313,6 +353,24 @@ public class Configuration {
 
 			return typeSerializers;
 		}
+
+        private List<Class<? extends FullTextModel>> loadFullTextList(String[] models) {
+            final List<Class<? extends FullTextModel>> modelClasses = new ArrayList<Class<? extends FullTextModel>>();
+            final ClassLoader classLoader = mContext.getClass().getClassLoader();
+            for (String model : models) {
+                try {
+                    Class modelClass = Class.forName(model.trim(), false, classLoader);
+                    if (ReflectionUtils.isModel(modelClass)) {
+                        modelClasses.add(modelClass);
+                    }
+                }
+                catch (ClassNotFoundException e) {
+                    Log.e("Couldn't create class.", e);
+                }
+            }
+
+            return modelClasses;
+        }
 
 	}
 }

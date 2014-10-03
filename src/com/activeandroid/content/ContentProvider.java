@@ -12,6 +12,7 @@ import android.util.SparseArray;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.Cache;
 import com.activeandroid.Configuration;
+import com.activeandroid.FullTextModel;
 import com.activeandroid.Model;
 import com.activeandroid.TableInfo;
 
@@ -160,6 +161,21 @@ public class ContentProvider extends android.content.ContentProvider {
 
 		return Uri.parse(uri.toString());
 	}
+
+    public static Uri createFullTextUri(Class<? extends FullTextModel> type, Long id) {
+        final StringBuilder uri = new StringBuilder();
+        uri.append("content://");
+        uri.append(sAuthority);
+        uri.append("/");
+        uri.append(Cache.getFullTextTableName(type).toLowerCase());
+
+        if (id != null) {
+            uri.append("/");
+            uri.append(id.toString());
+        }
+
+        return Uri.parse(uri.toString());
+    }
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// PROTECTED METHODS
